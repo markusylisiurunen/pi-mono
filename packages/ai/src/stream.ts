@@ -3,6 +3,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { supportsXhigh } from "./models.js";
 import { type AnthropicOptions, streamAnthropic } from "./providers/anthropic.js";
+import { type AnthropicBedrockOptions, streamAnthropicBedrock } from "./providers/anthropic-bedrock.js";
 import { type GoogleOptions, streamGoogle } from "./providers/google.js";
 import {
 	type GoogleGeminiCliOptions,
@@ -64,7 +65,19 @@ export function getEnvApiKey(provider: any): string | undefined {
 
 		if (hasCredentials && hasProject && hasLocation) {
 			return "<authenticated>";
+    }
+  }
+
+	// For anthropic-bedrock, construct credentials from AWS env vars or return empty to use default chain
+	if (provider === "anthropic-bedrock") {
+		const accessKey = process.env.AWS_ACCESS_KEY_ID;
+		const secretKey = process.env.AWS_SECRET_ACCESS_KEY;
+		const sessionToken = process.env.AWS_SESSION_TOKEN;
+		if (accessKey && secretKey) {
+			return sessionToken ? `${accessKey}:${secretKey}:${sessionToken}` : `${accessKey}:${secretKey}`;
 		}
+		// Return empty string to use default AWS credential chain
+		return "";
 	}
 
 	const envMap: Record<string, string> = {
@@ -94,7 +107,8 @@ export function stream<TApi extends Api>(
 	}
 
 	const apiKey = options?.apiKey || getEnvApiKey(model.provider);
-	if (!apiKey) {
+	// anthropic-bedrock can use empty string to use default AWS credential chain
+	if (apiKey === undefined && model.api !== "anthropic-bedrock") {
 		throw new Error(`No API key for provider: ${model.provider}`);
 	}
 	const providerOptions = { ...options, apiKey };
@@ -103,6 +117,9 @@ export function stream<TApi extends Api>(
 	switch (api) {
 		case "anthropic-messages":
 			return streamAnthropic(model as Model<"anthropic-messages">, context, providerOptions);
+
+		case "anthropic-bedrock":
+			return streamAnthropicBedrock(model as Model<"anthropic-bedrock">, context, providerOptions);
 
 		case "openai-completions":
 			return streamOpenAICompletions(model as Model<"openai-completions">, context, providerOptions as any);
@@ -152,7 +169,8 @@ export function streamSimple<TApi extends Api>(
 	}
 
 	const apiKey = options?.apiKey || getEnvApiKey(model.provider);
-	if (!apiKey) {
+	// anthropic-bedrock can use empty string to use default AWS credential chain
+	if (apiKey === undefined && model.api !== "anthropic-bedrock") {
 		throw new Error(`No API key for provider: ${model.provider}`);
 	}
 
@@ -219,6 +237,26 @@ function mapOptionsForApi<TApi extends Api>(
 				thinkingEnabled: true,
 				thinkingBudgetTokens: thinkingBudget,
 			} satisfies AnthropicOptions;
+		}
+
+		case "anthropic-bedrock": {
+			// Same as anthropic-messages but uses AnthropicBedrockOptions
+			if (!options?.reasoning) {
+				return { ...base, thinkingEnabled: false } satisfies AnthropicBedrockOptions;
+			}
+
+			const bedrockBudgets = {
+				minimal: 1024,
+				low: 2048,
+				medium: 8192,
+				high: 16384,
+			};
+
+			return {
+				...base,
+				thinkingEnabled: true,
+				thinkingBudgetTokens: bedrockBudgets[clampReasoning(options.reasoning)!],
+			} satisfies AnthropicBedrockOptions;
 		}
 
 		case "openai-completions":

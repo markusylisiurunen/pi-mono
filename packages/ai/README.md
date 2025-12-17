@@ -49,6 +49,7 @@ Unified LLM API with automatic model discovery, provider configuration, token an
 - **OpenAI**
 - **OpenAI Codex** (ChatGPT Plus/Pro subscription, requires OAuth, see below)
 - **Anthropic**
+- **Anthropic Bedrock** (AWS Bedrock, see below)
 - **Google**
 - **Vertex AI** (Gemini via Vertex AI)
 - **Mistral**
@@ -989,6 +990,60 @@ const response = await complete(model, {
 **GitHub Copilot**: If you get "The requested model is not supported" error, enable the model manually in VS Code: open Copilot Chat, click the model selector, select the model (warning icon), and click "Enable".
 
 **Google Gemini CLI / Antigravity**: These use Google Cloud OAuth. The `apiKey` returned by `getOAuthApiKey()` is a JSON string containing both the token and project ID, which the library handles automatically.
+
+## Anthropic Bedrock
+
+Claude models are available through Amazon Bedrock using the `anthropic-bedrock` provider. This uses the `@anthropic-ai/bedrock-sdk` package which provides the same API as the standard Anthropic SDK but with AWS authentication.
+
+### Authentication
+
+The provider supports multiple authentication methods:
+
+1. **Default AWS credential chain** (recommended): Set up AWS credentials via environment variables, `~/.aws/credentials`, or IAM roles. No API key needed.
+
+2. **Explicit credentials via environment variables**:
+   ```bash
+   AWS_ACCESS_KEY_ID=your-access-key
+   AWS_SECRET_ACCESS_KEY=your-secret-key
+   AWS_SESSION_TOKEN=your-session-token  # Optional, for temporary credentials
+   AWS_REGION=us-west-2  # Defaults to us-east-1
+   ```
+
+3. **Explicit credentials via API key string** (format: `accessKey:secretKey` or `accessKey:secretKey:sessionToken`):
+   ```typescript
+   await complete(model, context, {
+     apiKey: 'AKIAIOSFODNN7EXAMPLE:wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'
+   });
+   ```
+
+### Usage
+
+```typescript
+import { getModel, complete } from '@mariozechner/pi-ai';
+
+// Use global endpoint for maximum availability
+const model = getModel('anthropic-bedrock', 'global.anthropic.claude-sonnet-4-5-20250929-v1:0');
+
+// Or use regional endpoint for data residency requirements
+// const model = getModel('anthropic-bedrock', 'anthropic.claude-sonnet-4-5-20250929-v1:0');
+
+const response = await complete(model, {
+  messages: [{ role: 'user', content: 'Hello!' }]
+}, {
+  awsRegion: 'us-west-2'  // Optional, defaults to AWS_REGION env var or us-east-1
+});
+```
+
+### Available Models
+
+Bedrock model IDs follow the format `anthropic.claude-{model}-{version}-v1:0` for regional endpoints or `global.anthropic.claude-{model}-{version}-v1:0` for global endpoints. Available models include:
+
+- Claude Sonnet 4.5: `global.anthropic.claude-sonnet-4-5-20250929-v1:0`
+- Claude Sonnet 4: `global.anthropic.claude-sonnet-4-20250514-v1:0`
+- Claude Opus 4.5: `global.anthropic.claude-opus-4-5-20251101-v1:0`
+- Claude Haiku 4.5: `global.anthropic.claude-haiku-4-5-20251001-v1:0`
+
+See [AWS Bedrock documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html) for full model availability by region.
 
 ## License
 
