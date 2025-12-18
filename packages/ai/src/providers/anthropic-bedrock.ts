@@ -384,7 +384,15 @@ function buildParams(
 	};
 
 	if (context.systemPrompt) {
-		params.system = sanitizeSurrogates(context.systemPrompt);
+		params.system = [
+			{
+				type: "text",
+				text: sanitizeSurrogates(context.systemPrompt),
+				cache_control: {
+					type: "ephemeral",
+				},
+			},
+		];
 	}
 
 	if (options?.temperature !== undefined) {
@@ -537,6 +545,23 @@ function convertMessages(messages: Message[], model: Model<"anthropic-bedrock">)
 				role: "user",
 				content: toolResults,
 			});
+		}
+	}
+
+	// Add cache_control to the last user message to cache conversation history
+	if (params.length > 0) {
+		const lastMessage = params[params.length - 1];
+		if (lastMessage.role === "user") {
+			// Add cache control to the last content block
+			if (Array.isArray(lastMessage.content)) {
+				const lastBlock = lastMessage.content[lastMessage.content.length - 1];
+				if (
+					lastBlock &&
+					(lastBlock.type === "text" || lastBlock.type === "image" || lastBlock.type === "tool_result")
+				) {
+					(lastBlock as any).cache_control = { type: "ephemeral" };
+				}
+			}
 		}
 	}
 
