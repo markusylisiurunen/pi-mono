@@ -259,21 +259,19 @@ export const streamAnthropicBedrock: StreamFunction<"anthropic-bedrock"> = (
 						output.stopReason = mapStopReason(event.delta.stop_reason as Anthropic.Messages.StopReason);
 					}
 
+					// Bedrock's message_delta only provides output_tokens, not input/cache tokens.
+					// Those are provided in message_start, so we only update output here.
 					const usage = (
 						event as unknown as {
 							usage?: {
-								input_tokens?: number;
 								output_tokens?: number;
-								cache_read_input_tokens?: number;
-								cache_creation_input_tokens?: number;
 							};
 						}
 					).usage;
 
-					output.usage.input = usage?.input_tokens ?? 0;
-					output.usage.output = usage?.output_tokens ?? 0;
-					output.usage.cacheRead = usage?.cache_read_input_tokens ?? 0;
-					output.usage.cacheWrite = usage?.cache_creation_input_tokens ?? 0;
+					if (usage?.output_tokens !== undefined) {
+						output.usage.output = usage.output_tokens;
+					}
 					output.usage.totalTokens =
 						output.usage.input + output.usage.output + output.usage.cacheRead + output.usage.cacheWrite;
 					calculateCost(model, output.usage);
