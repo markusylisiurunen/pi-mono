@@ -13,7 +13,7 @@ export type { AssistantMessageEventStream } from "./utils/event-stream.js";
 export type Api =
 	| "openai-completions"
 	| "openai-responses"
-  | "openai-codex-responses"
+	| "openai-codex-responses"
 	| "anthropic-bedrock"
 	| "anthropic-messages"
 	| "google-generative-ai"
@@ -23,8 +23,6 @@ export type Api =
 export interface ApiOptionsMap {
 	"anthropic-bedrock": AnthropicBedrockOptions;
 	"anthropic-messages": AnthropicOptions;
-	"google-gemini-cli": GoogleGeminiCliOptions;
-	"google-generative-ai": GoogleOptions;
 	"openai-completions": OpenAICompletionsOptions;
 	"openai-responses": OpenAIResponsesOptions;
 	"openai-codex-responses": OpenAICodexResponsesOptions;

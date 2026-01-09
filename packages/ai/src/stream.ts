@@ -65,8 +65,8 @@ export function getEnvApiKey(provider: any): string | undefined {
 
 		if (hasCredentials && hasProject && hasLocation) {
 			return "<authenticated>";
-    }
-  }
+		}
+	}
 
 	// For anthropic-bedrock, construct credentials from AWS env vars or return empty to use default chain
 	if (provider === "anthropic-bedrock") {
