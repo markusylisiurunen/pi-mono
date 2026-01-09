@@ -117,7 +117,7 @@ export const streamAnthropicBedrock: StreamFunction<"anthropic-bedrock"> = (
 		};
 
 		try {
-		const apiKey = options?.apiKey ?? getEnvApiKey(model.provider) ?? "";
+			const apiKey = options?.apiKey ?? getEnvApiKey(model.provider) ?? "";
 			const client = createClient(model, apiKey, options);
 			const params = buildParams(model, context, options);
 			const anthropicStream = client.beta.messages.stream({ ...params, stream: true }, { signal: options?.signal });

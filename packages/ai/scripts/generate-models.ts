@@ -905,6 +905,75 @@ async function generateModels() {
 	];
 	allModels.push(...vertexModels);
 
+	// Add Anthropic Bedrock models
+	// These use AWS Bedrock-specific model IDs and the anthropic-bedrock API
+	// See: https://docs.anthropic.com/en/api/claude-on-amazon-bedrock
+	const bedrockModels = [
+		{
+			id: "anthropic.claude-opus-4-5-20251101-v1:0",
+			name: "Claude Opus 4.5 (Bedrock)",
+			reasoning: true,
+			contextWindow: 200000,
+			maxTokens: 64000,
+			cost: { input: 5, output: 25, cacheRead: 0.5, cacheWrite: 6.25 },
+		},
+		{
+			id: "eu.anthropic.claude-opus-4-5-20251101-v1:0",
+			name: "Claude Opus 4.5 (Bedrock)",
+			reasoning: true,
+			contextWindow: 200000,
+			maxTokens: 64000,
+			cost: { input: 5, output: 25, cacheRead: 0.5, cacheWrite: 6.25 },
+		},
+		{
+			id: "global.anthropic.claude-opus-4-5-20251101-v1:0",
+			name: "Claude Opus 4.5 (Bedrock Global)",
+			reasoning: true,
+			contextWindow: 200000,
+			maxTokens: 64000,
+			cost: { input: 5, output: 25, cacheRead: 0.5, cacheWrite: 6.25 },
+		},
+		{
+			id: "anthropic.claude-haiku-4-5-20251001-v1:0",
+			name: "Claude Haiku 4.5 (Bedrock)",
+			reasoning: true,
+			contextWindow: 200000,
+			maxTokens: 64000,
+			cost: { input: 1, output: 5, cacheRead: 0.1, cacheWrite: 1.25 },
+		},
+		{
+			id: "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+			name: "Claude Haiku 4.5 (Bedrock)",
+			reasoning: true,
+			contextWindow: 200000,
+			maxTokens: 64000,
+			cost: { input: 1, output: 5, cacheRead: 0.1, cacheWrite: 1.25 },
+		},
+		{
+			id: "global.anthropic.claude-haiku-4-5-20251001-v1:0",
+			name: "Claude Haiku 4.5 (Bedrock Global)",
+			reasoning: true,
+			contextWindow: 200000,
+			maxTokens: 64000,
+			cost: { input: 1, output: 5, cacheRead: 0.1, cacheWrite: 1.25 },
+		},
+	];
+
+	for (const m of bedrockModels) {
+		allModels.push({
+			id: m.id,
+			name: m.name,
+			api: "anthropic-bedrock",
+			provider: "anthropic-bedrock",
+			baseUrl: "", // Bedrock SDK determines URL from region
+			reasoning: m.reasoning,
+			input: ["text", "image"],
+			cost: m.cost,
+			contextWindow: m.contextWindow,
+			maxTokens: m.maxTokens,
+		});
+	}
+
 	// Group by provider and deduplicate by model ID
 	const providers: Record<string, Record<string, Model<any>>> = {};
 	for (const model of allModels) {
@@ -941,9 +1010,7 @@ export const MODELS = {
 			output += `\t\t\tname: "${model.name}",\n`;
 			output += `\t\t\tapi: "${model.api}",\n`;
 			output += `\t\t\tprovider: "${model.provider}",\n`;
-			if (model.baseUrl) {
-				output += `\t\t\tbaseUrl: "${model.baseUrl}",\n`;
-			}
+			output += `\t\t\tbaseUrl: "${model.baseUrl ?? ""}",\n`;
 			if (model.headers) {
 				output += `\t\t\theaders: ${JSON.stringify(model.headers)},\n`;
 			}
