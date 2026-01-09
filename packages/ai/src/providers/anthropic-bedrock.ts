@@ -1,10 +1,7 @@
 import AnthropicBedrock from "@anthropic-ai/bedrock-sdk";
 import type Anthropic from "@anthropic-ai/sdk";
-import type {
-	ContentBlockParam,
-	MessageCreateParamsStreaming,
-	MessageParam,
-} from "@anthropic-ai/sdk/resources/messages.js";
+import type { MessageCreateParamsStreaming } from "@anthropic-ai/sdk/resources/beta/messages/messages.js";
+import type { ContentBlockParam, MessageParam } from "@anthropic-ai/sdk/resources/messages.js";
 import { calculateCost } from "../models.js";
 import { getEnvApiKey } from "../stream.js";
 import type {
@@ -344,14 +341,8 @@ function createClient(
 	const credentials = parseAwsCredentials(apiKey);
 	const awsRegion = options?.awsRegion || process.env.AWS_REGION || "us-east-1";
 
-	const betaFeatures = ["fine-grained-tool-streaming-2025-05-14"];
-	if (options?.interleavedThinking !== false) {
-		betaFeatures.push("interleaved-thinking-2025-05-14");
-	}
-
 	const defaultHeaders = {
 		accept: "application/json",
-		"anthropic-beta": betaFeatures.join(","),
 		...(model.headers || {}),
 	};
 
@@ -374,10 +365,16 @@ function buildParams(
 	context: Context,
 	options?: AnthropicBedrockOptions,
 ): MessageCreateParamsStreaming {
+	const betaFeatures = ["fine-grained-tool-streaming-2025-05-14"];
+	if (options?.interleavedThinking !== false) {
+		betaFeatures.push("interleaved-thinking-2025-05-14");
+	}
+
 	const params: MessageCreateParamsStreaming = {
 		model: model.id,
 		messages: convertMessages(context.messages, model),
 		max_tokens: options?.maxTokens || (model.maxTokens / 3) | 0,
+		betas: betaFeatures,
 		stream: true,
 	};
 
