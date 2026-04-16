@@ -423,12 +423,14 @@ function handleContentBlockStop(
 }
 
 /**
- * Check if the model supports adaptive thinking (Opus 4.6 and Sonnet 4.6).
+ * Check if the model supports adaptive thinking (Opus 4.6+, Sonnet 4.6).
  */
 function supportsAdaptiveThinking(modelId: string): boolean {
 	return (
 		modelId.includes("opus-4-6") ||
 		modelId.includes("opus-4.6") ||
+		modelId.includes("opus-4-7") ||
+		modelId.includes("opus-4.7") ||
 		modelId.includes("sonnet-4-6") ||
 		modelId.includes("sonnet-4.6")
 	);
@@ -447,7 +449,12 @@ function mapThinkingLevelToEffort(
 		case "high":
 			return "high";
 		case "xhigh":
-			return modelId.includes("opus-4-6") || modelId.includes("opus-4.6") ? "max" : "high";
+			return modelId.includes("opus-4-6") ||
+				modelId.includes("opus-4.6") ||
+				modelId.includes("opus-4-7") ||
+				modelId.includes("opus-4.7")
+				? "max"
+				: "high";
 		default:
 			return "high";
 	}

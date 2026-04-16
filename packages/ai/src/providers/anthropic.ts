@@ -464,7 +464,7 @@ function supportsAdaptiveThinking(modelId: string): boolean {
 
 /**
  * Map ThinkingLevel to Anthropic effort levels for adaptive thinking.
- * Note: effort "max" is only valid on Opus 4.6.
+ * Note: effort "max" is only valid on Opus 4.6+.
  */
 function mapThinkingLevelToEffort(level: SimpleStreamOptions["reasoning"], modelId: string): AnthropicEffort {
 	switch (level) {
@@ -477,7 +477,12 @@ function mapThinkingLevelToEffort(level: SimpleStreamOptions["reasoning"], model
 		case "high":
 			return "high";
 		case "xhigh":
-			return modelId.includes("opus-4-6") || modelId.includes("opus-4.6") ? "max" : "high";
+			return modelId.includes("opus-4-6") ||
+				modelId.includes("opus-4.6") ||
+				modelId.includes("opus-4-7") ||
+				modelId.includes("opus-4.7")
+				? "max"
+				: "high";
 		default:
 			return "high";
 	}
