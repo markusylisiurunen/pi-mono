@@ -132,11 +132,11 @@ describe("Anthropic thinking disable payload", () => {
 		expect(payload.output_config).toEqual({ effort: "high" });
 	});
 
-	it("maps xhigh reasoning to effort=max for Claude Opus 4.7", async () => {
+	it("maps xhigh reasoning to effort=xhigh for Claude Opus 4.7", async () => {
 		const payload = await capturePayload(getModel("anthropic", "claude-opus-4-7"), { reasoning: "xhigh" });
 
 		expect(payload.thinking).toEqual({ type: "adaptive" });
-		expect(payload.output_config).toEqual({ effort: "max" });
+		expect(payload.output_config).toEqual({ effort: "xhigh" });
 	});
 });
 
