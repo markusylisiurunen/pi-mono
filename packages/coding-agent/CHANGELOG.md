@@ -24,6 +24,10 @@
 
 ### Fixed
 
+- Fixed `SettingsManager.inMemory()` initial settings being lost after reloads triggered by SDK resource loading ([#3616](https://github.com/badlogic/pi-mono/issues/3616))
+- Fixed `models.json` provider compatibility to accept `compat.supportsLongCacheRetention`, allowing proxies to opt out of long-retention cache fields when needed while long retention is enabled by default when requested ([#3543](https://github.com/badlogic/pi-mono/issues/3543))
+- Fixed `--thinking xhigh` for `openai-codex` `gpt-5.5` so it is no longer downgraded to `high`.
+- Fixed git package installs with custom `npmCommand` values such as `pnpm` by avoiding npm-specific production flags in that compatibility path ([#3604](https://github.com/badlogic/pi-mono/issues/3604))
 - Fixed first user messages rendering without spacing after existing notices such as compaction summaries or status messages ([#3613](https://github.com/badlogic/pi-mono/issues/3613))
 - Fixed the handoff extension example to use the replacement-session context after creating a new session, avoiding stale `ctx` errors when it installs the generated prompt ([#3606](https://github.com/badlogic/pi-mono/issues/3606))
 - Fixed session replacement and `/quit` teardown ordering to run host-owned extension UI cleanup synchronously after `session_shutdown` handlers complete but before invalidating the old extension context, preventing stale extension UI from rendering against a disposed session.
@@ -36,6 +40,8 @@
 - Fixed `ctx.ui.setWorkingMessage()` to persist across loader recreation, matching the behavior of `ctx.ui.setWorkingIndicator()` ([#3566](https://github.com/badlogic/pi-mono/issues/3566))
 - Fixed coding-agent `fs.watch` error handling for theme and git-footer watchers to retry after transient watcher failures such as `EMFILE`, avoiding startup crashes in large repos ([#3564](https://github.com/badlogic/pi-mono/issues/3564))
 - Fixed built-in `kimi-coding` model generation to attach the expected `User-Agent` header so direct Kimi Coding requests use the provider's expected client identity ([#3586](https://github.com/badlogic/pi-mono/issues/3586))
+- Fixed extension shortcut conflict diagnostics to display at startup instead of only on reload, so extension authors discover reserved keybinding conflicts immediately rather than discovering them later through user feedback ([#3617](https://github.com/badlogic/pi-mono/issues/3617))
+- Fixed `models.json` Anthropic-compatible provider configuration to accept `compat.supportsEagerToolInputStreaming`, allowing proxies that reject per-tool `eager_input_streaming` to use the legacy fine-grained tool streaming beta header instead ([#3575](https://github.com/badlogic/pi-mono/issues/3575))
 
 ## [0.69.0] - 2026-04-22
 
